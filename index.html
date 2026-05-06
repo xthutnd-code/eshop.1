@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#1D9E75"/>
+<title>Potraviny Novák</title>
+<link rel="manifest" href="manifest.json"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;--green-text:#085041;
+  --red:#E24B4A;--red-light:#FCEBEB;--red-text:#A32D2D;
+  --blue:#185FA5;--blue-light:#E6F1FB;--blue-text:#0C447C;
+  --amber:#BA7517;--amber-light:#FAEEDA;--amber-text:#633806;
+  --purple:#534AB7;--purple-light:#EEEDFE;--purple-text:#3C3489;
+  --gray:#5F5E5A;--gray-light:#F1EFE8;--gray-text:#444441;
+  --bg:#F7F7F5;--bg2:#FFFFFF;--bg3:#F1EFE8;
+  --text:#1A1A18;--text2:#5F5E5A;--text3:#8F8E89;
+  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.18);
+  --radius:10px;--radius-lg:14px;
+  --font:'DM Sans',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;position:relative}
+.screen{display:none;flex-direction:column;min-height:100vh}
+.screen.active{display:flex}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:18px;height:18px}
+.topbar-title{font-size:16px;font-weight:600;flex:1}
+.topbar-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.icon-btn{width:38px;height:38px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative}
+.icon-btn svg{width:18px;height:18px;stroke:var(--text);stroke-width:1.8;fill:none}
+.badge-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid var(--bg2)}
+
+/* NAV TABS */
+.tabs{background:var(--bg2);border-bottom:0.5px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:11px 16px;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);transition:color .15s}
+.tab.active{color:var(--green-dark);border-bottom-color:var(--green)}
+
+/* CONTENT */
+.content{padding:12px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card{background:var(--bg2);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:14px}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+
+/* PRODUCT CARDS */
+.product-card{background:var(--bg2);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:12px;display:flex;align-items:center;gap:12px}
+.prod-img{width:62px;height:62px;border-radius:var(--radius);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.prod-info{flex:1;min-width:0}
+.prod-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.prod-unit{font-size:12px;color:var(--text3);margin-bottom:5px}
+.prod-price{font-size:15px;font-weight:600;color:var(--green-dark)}
+.prod-vat{font-size:10px;color:var(--text3)}
+.prod-locked{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.prod-locked svg{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;flex-shrink:0}
+
+/* QTY CONTROL */
+.qty-wrap{flex-shrink:0}
+.qty-control{display:flex;align-items:center}
+.qty-btn{width:32px;height:32px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .1s;user-select:none}
+.qty-btn:first-child{border-radius:var(--radius) 0 0 var(--radius)}
+.qty-btn:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.qty-btn:active{background:var(--bg3)}
+.qty-val{width:32px;height:32px;border-top:0.5px solid var(--border2);border-bottom:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;background:var(--bg3)}
+.qty-add{width:32px;height:32px;border-radius:var(--radius);background:var(--green);border:none;color:white;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .1s}
+.qty-add:active{background:var(--green-dark)}
+
+/* CART FOOTER */
+.cart-footer{background:var(--bg2);border-top:0.5px solid var(--border2);padding:14px 16px;flex-shrink:0;position:sticky;bottom:0}
+.cart-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cart-label{font-size:13px;color:var(--text2)}
+.cart-count{font-size:11px;color:var(--text3);margin-top:1px}
+.cart-total{font-size:20px;font-weight:600}
+.btn-primary{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius-lg);font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-primary:active{background:var(--green-dark)}
+.btn-secondary{width:100%;padding:13px;background:var(--bg2);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--radius-lg);font-size:15px;font-weight:500;cursor:pointer;transition:background .15s;text-align:center}
+.btn-secondary:active{background:var(--bg3)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 9px;border-radius:99px}
+.b-nova{background:var(--red-light);color:var(--red-text)}
+.b-prijata{background:var(--blue-light);color:var(--blue-text)}
+.b-pripravuje{background:var(--amber-light);color:var(--amber-text)}
+.b-pripravena{background:var(--purple-light);color:var(--purple-text)}
+.b-dorucena{background:var(--green-light);color:var(--green-text)}
+.b-zrusena{background:var(--gray-light);color:var(--gray-text)}
+
+/* LOGIN / REGISTER */
+.auth-wrap{padding:24px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.auth-logo{text-align:center;padding:24px 0 8px}
+.auth-logo-mark{width:64px;height:64px;border-radius:20px;background:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.auth-logo-mark svg{width:30px;height:30px}
+.auth-title{font-size:22px;font-weight:600;text-align:center}
+.auth-sub{font-size:14px;color:var(--text2);text-align:center;margin-top:4px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.field input,.field select{width:100%;font-size:15px;padding:10px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);outline:none;font-family:var(--font)}
+.field input:focus{border-color:var(--green)}
+.field input.err{border-color:var(--red)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.err-msg{font-size:12px;color:var(--red-text);margin-top:6px;display:none}
+.divider{text-align:center;font-size:12px;color:var(--text3);padding:4px 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:44%;height:0.5px;background:var(--border)}
+.divider::before{left:0}.divider::after{right:0}
+.link-btn{background:none;border:none;color:var(--green-dark);font-size:14px;font-weight:500;cursor:pointer;text-decoration:underline;font-family:var(--font)}
+
+/* BACK BTN */
+.back-btn{background:none;border:none;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500;padding:0;font-family:var(--font)}
+.back-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ORDER CARDS */
+.order-card{background:var(--bg2);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:14px;cursor:pointer;transition:border-color .15s}
+.order-card:active{border-color:var(--border2)}
+.order-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.order-id{font-size:15px;font-weight:600}
+.order-total{font-size:15px;font-weight:600;color:var(--green-dark)}
+.order-meta{font-size:12px;color:var(--text3);margin-bottom:8px}
+.order-items{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.item-chip{font-size:12px;background:var(--bg3);border-radius:8px;padding:3px 8px;color:var(--text2)}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column}
+.tl-step{display:flex;gap:12px}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0}
+.tl-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid transparent}
+.tl-dot.done{background:var(--green);border-color:var(--green)}
+.tl-dot.active{background:var(--bg2);border-color:var(--green)}
+.tl-dot.wait{background:var(--bg3);border-color:var(--border2)}
+.tl-dot svg{width:10px;height:10px;stroke:white;fill:none;stroke-width:2.5}
+.tl-active-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.tl-line{width:2px;flex:1;min-height:24px;margin:2px 0}
+.tl-line.done{background:var(--green)}
+.tl-line.wait{background:var(--border)}
+.tl-right{padding-bottom:22px;flex:1;min-width:0;padding-top:1px}
+.tl-label{font-size:14px;font-weight:500;margin-bottom:2px}
+.tl-label.wait{color:var(--text3)}
+.tl-sub{font-size:12px;color:var(--text2)}
+.tl-time{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* AVATAR */
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--green);color:white;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+
+/* INFO ROWS */
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:14px}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:13px;color:var(--text2)}
+
+/* NOTIF BAR */
+.notif-bar{background:var(--blue-light);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;border:0.5px solid #B5D4F4}
+.notif-bar svg{flex-shrink:0;width:16px;height:16px;stroke:#185FA5;fill:none;stroke-width:2}
+.notif-text{font-size:13px;color:var(--blue-text);flex:1}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--bg3);border-radius:var(--radius);padding:12px}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:4px}
+.stat-val{font-size:20px;font-weight:600}
+
+/* DETAIL ITEMS */
+.detail-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border)}
+.detail-item:last-child{border-bottom:none}
+.di-emoji{font-size:22px;width:30px;text-align:center;flex-shrink:0}
+.di-name{flex:1;font-size:14px;font-weight:500}
+.di-qty{font-size:12px;color:var(--text3)}
+.di-price{font-size:14px;font-weight:600;color:var(--green-dark);flex-shrink:0}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;border-top:0.5px solid var(--border2);margin-top:4px}
+
+/* WAIT SCREEN */
+.wait-screen{padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;flex:1}
+.wait-icon{width:68px;height:68px;border-radius:50%;background:var(--amber-light);display:flex;align-items:center;justify-content:center}
+.wait-icon svg{width:28px;height:28px;stroke:var(--amber-text);fill:none;stroke-width:1.8}
+
+/* PROFIL */
+.profil-header{display:flex;align-items:center;gap:14px}
+.profil-av{width:52px;height:52px;border-radius:50%;background:var(--green);color:white;font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+/* NAV TABS FILTER */
+.filter-tabs{display:flex;background:var(--bg3);border-radius:var(--radius);padding:3px;gap:2px;margin-bottom:4px}
+.filter-tab{flex:1;padding:7px 8px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border-radius:8px;color:var(--text2);transition:all .15s}
+.filter-tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+.demo-hint{background:var(--amber-light);border-radius:var(--radius);padding:9px 12px;font-size:12px;color:var(--amber-text);text-align:center;border:0.5px solid #FAC775}
+</style>
+</head>
+<body>
+
+<!-- ===== ÚVODNÍ OBRAZOVKA ===== -->
+<div id="s-uvod" class="screen active">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div class="auth-logo">
+      <div class="auth-logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      </div>
+      <div class="auth-title">Potraviny Novák</div>
+      <div class="auth-sub">Velkoobchod · Ostrava</div>
+    </div>
+    <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:14px;color:var(--text2);margin-bottom:18px;line-height:1.6">Pro zobrazení cen a objednávání se musíš přihlásit nebo zaregistrovat.</div>
+        <button class="btn-primary" onclick="show('s-login')" style="margin-bottom:10px">Přihlásit se</button>
+        <div class="divider" style="margin:8px 0">nebo</div>
+        <button class="btn-secondary" onclick="show('s-reg')">Registrovat se</button>
+      </div>
+      <div class="demo-hint">
+        Demo: <strong>jan@firma.cz</strong> / <strong>heslo123</strong> nebo admin: <strong>admin@novak.cz</strong> / <strong>admin123</strong>
+      </div>
+      <div class="card">
+        <div class="card-title">Ukázka produktů</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:0.5px solid var(--border)">
+            <div class="prod-img" style="width:48px;height:48px;font-size:22px">🍞</div>
+            <div style="flex:1"><div class="prod-name">Celozrnný chléb</div><div class="prod-unit">750 g</div></div>
+            <div class="prod-locked"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Přihlaste se</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+            <div class="prod-img" style="width:48px;height:48px;font-size:22px">🥛</div>
+            <div style="flex:1"><div class="prod-name">Mléko plnotučné</div><div class="prod-unit">1 l</div></div>
+            <div class="prod-locked"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Přihlaste se</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="s-login" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="show('s-uvod')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Zpět</button>
+    <div style="flex:1;font-size:16px;font-weight:600;text-align:center">Přihlášení</div>
+    <div style="width:50px"></div>
+  </div>
+  <div class="auth-wrap">
+    <div class="card">
+      <div class="field"><label>E-mail</label><input type="email" id="l-email" placeholder="vas@email.cz"/></div>
+      <div class="field"><label>Heslo</label><input type="password" id="l-pass" placeholder="••••••••"/></div>
+      <div class="err-msg" id="l-err">Nesprávný e-mail nebo heslo.</div>
+      <button class="btn-primary" style="margin-top:6px" onclick="doLogin()">Přihlásit se</button>
+    </div>
+    <div style="text-align:center;font-size:14px;color:var(--text2)">Nemáš účet? <button class="link-btn" onclick="show('s-reg')">Registruj se</button></div>
+  </div>
+</div>
+
+<!-- ===== REGISTRACE ===== -->
+<div id="s-reg" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="show('s-uvod')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Zpět</button>
+    <div style="flex:1;font-size:16px;font-weight:600;text-align:center">Registrace</div>
+    <div style="width:50px"></div>
+  </div>
+  <div class="auth-wrap">
+    <div class="card">
+      <div class="card-title">Osobní údaje</div>
+      <div class="row2">
+        <div class="field"><label>Jméno</label><input type="text" id="r-jmeno" placeholder="Jan"/></div>
+        <div class="field"><label>Příjmení</label><input type="text" id="r-prijmeni" placeholder="Novotný"/></div>
+      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="r-email" placeholder="vas@email.cz"/></div>
+      <div class="field"><label>Telefon</label><input type="tel" id="r-tel" placeholder="+420 777 000 111"/></div>
+      <div class="field"><label>Heslo (min. 6 znaků)</label><input type="password" id="r-pass" placeholder="••••••••"/></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Firma (volitelné)</div>
+      <div class="field"><label>Název firmy</label><input type="text" id="r-firma" placeholder="ABC s.r.o."/></div>
+      <div class="row2">
+        <div class="field"><label>IČO</label><input type="text" id="r-ico" placeholder="12345678"/></div>
+        <div class="field"><label>DIČ</label><input type="text" id="r-dic" placeholder="CZ12345678"/></div>
+      </div>
+    </div>
+    <div class="err-msg" id="r-err" style="text-align:center">Vyplň všechna povinná pole.</div>
+    <button class="btn-primary" onclick="doRegister()">Odeslat žádost o registraci</button>
+    <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.6">Po odeslání admin schválí tvůj účet. Dostaneš potvrzení e-mailem.</div>
+  </div>
+</div>
+
+<!-- ===== ČEKÁNÍ NA SCHVÁLENÍ ===== -->
+<div id="s-cekani" class="screen">
+  <div class="wait-screen">
+    <div class="wait-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div style="font-size:20px;font-weight:600">Žádost odeslána</div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.6;max-width:280px">Tvoje registrace čeká na schválení administrátorem. Budeme tě kontaktovat e-mailem nebo telefonem.</div>
+    <button class="btn-secondary" style="margin-top:8px" onclick="show('s-uvod')">Zpět na úvod</button>
+  </div>
+</div>
+
+<!-- ===== ESHOP ===== -->
+<div id="s-eshop" class="screen">
+  <div class="topbar">
+    <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+    <div style="flex:1"><div class="topbar-title">Potraviny Novák</div><div class="topbar-sub">Velkoobchod Ostrava</div></div>
+    <div class="icon-btn" onclick="show('s-kosik')" style="margin-right:4px">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <div class="badge-dot" id="cart-badge-dot" style="display:none"></div>
+    </div>
+    <div class="avatar" id="user-av" onclick="show('s-profil')">JN</div>
+  </div>
+  <div class="tabs" id="cat-tabs">
+    <div class="tab active" onclick="filterCat(this,'vse')">Vše</div>
+    <div class="tab" onclick="filterCat(this,'potraviny')">Potraviny</div>
+    <div class="tab" onclick="filterCat(this,'napoje')">Nápoje</div>
+    <div class="tab" onclick="filterCat(this,'drogerie')">Drogerie</div>
+  </div>
+  <div class="content" id="product-list" style="padding-bottom:120px"></div>
+  <div class="cart-footer">
+    <div class="cart-row">
+      <div><div class="cart-label">Celkem s DPH</div><div class="cart-count" id="cart-count-text">Košík je prázdný</div></div>
+      <div class="cart-total" id="cart-total-text">0,00 Kč</div>
+    </div>
+    <button class="btn-primary" onclick="show('s-kosik')">Zobrazit košík a objednat</button>
+  </div>
+</div>
+
+<!-- ===== KOŠÍK ===== -->
+<div id="s-kosik" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="show('s-eshop')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Zpět</button>
+    <div style="flex:1;font-size:16px;font-weight:600;text-align:center">Košík</div>
+    <div style="width:50px"></div>
+  </div>
+  <div class="content" id="kosik-content"></div>
+</div>
+
+<!-- ===== OBJEDNÁVKY ZÁKAZNÍKA ===== -->
+<div id="s-objednavky" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="show('s-profil')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Zpět</button>
+    <div style="flex:1;font-size:16px;font-weight:600;text-align:center">Moje objednávky</div>
+    <div style="width:50px"></div>
+  </div>
+  <div class="content">
+    <div class="filter-tabs">
+      <div class="filter-tab active" onclick="filterOrd(this,'vse')">Všechny</div>
+      <div class="filter-tab" onclick="filterOrd(this,'aktivni')">Aktivní</div>
+      <div class="filter-tab" onclick="filterOrd(this,'hotove')">Dokončené</div>
+    </div>
+    <div id="ord-list"></div>
+  </div>
+</div>
+
+<!-- ===== DETAIL OBJEDNÁVKY ===== -->
+<div id="s-ord-detail" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="show('s-objednavky')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Zpět</button>
+    <div style="flex:1;font-size:16px;font-weight:600;text-align:center" id="ord-detail-title">Objednávka</div>
+    <div style="width:50px"></div>
+  </div>
+  <div class="content" id="ord-detail-content"></div>
+</div>
+
+<!-- ===== PROFIL ===== -->
+<div id="s-profil" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="show('s-eshop')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Zpět</button>
+    <div style="flex:1;font-size:16px;font-weight:600;text-align:center">Můj profil</div>
+    <div style="width:50px"></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="profil-header">
+        <div class="profil-av" id="profil-av">JN</div>
+        <div>
+          <div style="font-size:16px;font-weight:600" id="profil-name">Jan Novotný</div>
+          <div style="font-size:13px;color:var(--text2)" id="profil-email">jan@firma.cz</div>
+          <span class="badge b-dorucena" style="margin-top:5px">Schválený zákazník</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Rychlý přehled</div>
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-label">Objednávek celkem</div><div class="stat-val">4</div></div>
+        <div class="stat"><div class="stat-label">Aktivní objednávky</div><div class="stat-val" style="color:var(--amber)">2</div></div>
+      </div>
+    </div>
+    <button class="btn-secondary" onclick="show('s-objednavky')">📦 Moje objednávky</button>
+    <button class="btn-secondary" onclick="doLogout()" style="color:var(--red-text);border-color:#F09595">Odhlásit se</button>
+  </div>
+</div>
+
+<script>
+// ---- DATA ----
+const USERS = [
+  {id:1,jmeno:'Jan',prijmeni:'Novotný',email:'jan@firma.cz',pass:'heslo123',firma:'ABC s.r.o.',tel:'+420 777 001 002',status:'ok',initials:'JN'},
+  {id:2,jmeno:'Admin',prijmeni:'',email:'admin@novak.cz',pass:'admin123',firma:'',tel:'',status:'admin',initials:'AD'},
+];
+
+const PRODUCTS = [
+  {id:1,name:'Celozrnný chléb',unit:'750 g',price:42.90,vat:15,kat:'potraviny',emoji:'🍞'},
+  {id:2,name:'Mléko plnotučné',unit:'1 l',price:26.50,vat:15,kat:'potraviny',emoji:'🥛'},
+  {id:3,name:'Vejce M',unit:'10 ks',price:58.90,vat:15,kat:'potraviny',emoji:'🥚'},
+  {id:4,name:'Máslo 82%',unit:'250 g',price:69.90,vat:15,kat:'potraviny',emoji:'🧈'},
+  {id:5,name:'Kuřecí prsa',unit:'1 kg',price:189.00,vat:15,kat:'potraviny',emoji:'🍗'},
+  {id:6,name:'Rajčata cherry',unit:'250 g',price:34.90,vat:15,kat:'potraviny',emoji:'🍅'},
+  {id:7,name:'Kofola originál',unit:'1,5 l',price:29.90,vat:21,kat:'napoje',emoji:'🥤'},
+  {id:8,name:'Mattoni perlivá',unit:'1,5 l',price:19.90,vat:21,kat:'napoje',emoji:'💧'},
+  {id:9,name:'Džus pomeranč',unit:'1 l',price:44.90,vat:21,kat:'napoje',emoji:'🍊'},
+  {id:10,name:'Pivo Pilsner',unit:'6×0,5 l',price:119.00,vat:21,kat:'napoje',emoji:'🍺'},
+  {id:11,name:'Prací gel Ariel',unit:'43 dávek',price:289.00,vat:21,kat:'drogerie',emoji:'🧴'},
+  {id:12,name:'Toaletní papír',unit:'16 rolí',price:149.90,vat:21,kat:'drogerie',emoji:'🧻'},
+  {id:13,name:'Šampon Pantene',unit:'400 ml',price:129.00,vat:21,kat:'drogerie',emoji:'🧼'},
+  {id:14,name:'Zubní pasta',unit:'75 ml',price:49.90,vat:21,kat:'drogerie',emoji:'🪥'},
+];
+
+const ORDERS_DATA = [
+  {id:'#0042',date:'Dnes 14:32',total:1082.50,status:'pripravuje',
+   statusTs:{nova:'Dnes 14:32',prijata:'Dnes 14:35',pripravuje:'Dnes 14:50'},
+   items:[{emoji:'🍞',name:'Celozrnný chléb',qty:6,price:42.90},{emoji:'🥛',name:'Mléko plnotučné',qty:2,price:26.50},{emoji:'🥚',name:'Vejce M',qty:1,price:58.90},{emoji:'🧈',name:'Máslo 82%',qty:7,price:69.90},{emoji:'🍗',name:'Kuřecí prsa',qty:1,price:189.00},{emoji:'🍅',name:'Rajčata cherry',qty:1,price:34.90}]},
+  {id:'#0041',date:'Dnes 11:15',total:348.00,status:'pripravena',
+   statusTs:{nova:'Dnes 11:15',prijata:'Dnes 11:18',pripravuje:'Dnes 11:30',pripravena:'Dnes 11:55'},
+   items:[{emoji:'🥤',name:'Kofola originál',qty:3,price:29.90},{emoji:'💧',name:'Mattoni perlivá',qty:4,price:19.90},{emoji:'🧴',name:'Prací gel Ariel',qty:1,price:289.00}]},
+  {id:'#0040',date:'Včera 17:44',total:756.80,status:'dorucena',
+   statusTs:{nova:'Včera 17:44',prijata:'Včera 17:47',pripravuje:'Včera 18:10',pripravena:'Včera 18:30',dorucena:'Včera 18:45'},
+   items:[{emoji:'🍞',name:'Celozrnný chléb',qty:3,price:42.90},{emoji:'🧻',name:'Toaletní papír',qty:2,price:149.90},{emoji:'☕',name:'Káva mletá',qty:1,price:149.00},{emoji:'🥛',name:'Mléko plnotučné',qty:4,price:26.50}]},
+  {id:'#0038',date:'4. 5. 2026',total:229.90,status:'dorucena',
+   statusTs:{nova:'4.5 09:10',prijata:'4.5 09:14',pripravuje:'4.5 09:30',pripravena:'4.5 09:50',dorucena:'4.5 10:05'},
+   items:[{emoji:'🧼',name:'Šampon Pantene',qty:1,price:129.00},{emoji:'🪥',name:'Zubní pasta',qty:2,price:49.90}]},
+];
+
+const STEPS = [
+  {key:'nova',label:'Objednávka přijata',sub:'Vaše objednávka byla odeslána.'},
+  {key:'prijata',label:'Potvrzena adminem',sub:'Objednávka přijata do systému.'},
+  {key:'pripravuje',label:'Připravuje se',sub:'Pracujeme na přípravě zboží.'},
+  {key:'pripravena',label:'Připravena k vyzvednutí',sub:'Zboží čeká na předání.'},
+  {key:'dorucena',label:'Doručena',sub:'Objednávka byla úspěšně předána.'},
+];
+const STATUS_ORDER = ['nova','prijata','pripravuje','pripravena','dorucena'];
+const BADGE_CLASS = {nova:'b-nova',prijata:'b-prijata',pripravuje:'b-pripravuje',pripravena:'b-pripravena',dorucena:'b-dorucena',zrusena:'b-zrusena'};
+const BADGE_LABEL = {nova:'Nová',prijata:'Přijata',pripravuje:'Připravuje se',pripravena:'Připravena',dorucena:'Doručena',zrusena:'Zrušena'};
+
+let currentUser = null;
+let cart = {};
+let currentCat = 'vse';
+let ordFilter = 'vse';
+
+// ---- NAVIGATION ----
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='s-eshop') renderProducts();
+  if(id==='s-kosik') renderKosik();
+  if(id==='s-objednavky') renderOrders();
+}
+
+// ---- AUTH ----
+function doLogin(){
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  const err = document.getElementById('l-err');
+  const user = USERS.find(u=>u.email===email&&u.pass===pass);
+  if(!user){err.style.display='block';return;}
+  err.style.display='none';
+  currentUser = user;
+  if(user.status==='admin'){window.location.href='admin.html';return;}
+  document.getElementById('user-av').textContent = user.initials;
+  document.getElementById('profil-av').textContent = user.initials;
+  document.getElementById('profil-name').textContent = user.jmeno+' '+user.prijmeni;
+  document.getElementById('profil-email').textContent = user.email;
+  show('s-eshop');
+}
+
+function doRegister(){
+  const jmeno = document.getElementById('r-jmeno').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pass = document.getElementById('r-pass').value;
+  const err = document.getElementById('r-err');
+  if(!jmeno||!email||pass.length<6){err.style.display='block';return;}
+  err.style.display='none';
+  show('s-cekani');
+}
+
+function doLogout(){
+  currentUser=null;cart={};
+  document.getElementById('l-email').value='';
+  document.getElementById('l-pass').value='';
+  show('s-uvod');
+}
+
+// ---- PRODUCTS ----
+function filterCat(el,cat){
+  document.querySelectorAll('#cat-tabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentCat=cat;
+  renderProducts();
+}
+
+function renderProducts(){
+  const prods = currentCat==='vse'?PRODUCTS:PRODUCTS.filter(p=>p.kat===currentCat);
+  document.getElementById('product-list').innerHTML = prods.map(p=>{
+    const qty=cart[p.id]||0;
+    const qtyHTML = qty===0
+      ? `<button class="qty-add" onclick="chg(${p.id},1)">+</button>`
+      : `<div class="qty-control"><button class="qty-btn" onclick="chg(${p.id},-1)">−</button><div class="qty-val">${qty}</div><button class="qty-btn" onclick="chg(${p.id},1)">+</button></div>`;
+    return `<div class="product-card">
+      <div class="prod-img">${p.emoji}</div>
+      <div class="prod-info">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-unit">${p.unit}</div>
+        <div class="prod-price">${p.price.toFixed(2).replace('.',',')} Kč</div>
+        <div class="prod-vat">vč. ${p.vat}% DPH</div>
+      </div>
+      <div class="qty-wrap">${qtyHTML}</div>
+    </div>`;
+  }).join('');
+  updateCartUI();
+}
+
+function chg(id,delta){
+  const qty=(cart[id]||0)+delta;
+  if(qty<=0) delete cart[id]; else cart[id]=qty;
+  updateCartUI();
+  renderProducts();
+}
+
+function updateCartUI(){
+  let total=0,count=0;
+  Object.entries(cart).forEach(([id,qty])=>{
+    const p=PRODUCTS.find(x=>x.id==id);
+    if(p){total+=p.price*qty;count+=qty;}
+  });
+  document.getElementById('cart-total-text').textContent=total.toFixed(2).replace('.',',')+' Kč';
+  document.getElementById('cart-count-text').textContent=count>0?`${count} položek v košíku`:'Košík je prázdný';
+  document.getElementById('cart-badge-dot').style.display=count>0?'block':'none';
+}
+
+function renderKosik(){
+  const el=document.getElementById('kosik-content');
+  const items=Object.entries(cart).map(([id,qty])=>{const p=PRODUCTS.find(x=>x.id==id);return p?{p,qty}:null;}).filter(Boolean);
+  if(!items.length){el.innerHTML='<div class="card" style="text-align:center;padding:32px;color:var(--text3)">Košík je prázdný</div>';return;}
+  const total=items.reduce((s,{p,qty})=>s+p.price*qty,0);
+  el.innerHTML=`<div class="card">${items.map(({p,qty})=>`
+    <div class="detail-item">
+      <div class="di-emoji">${p.emoji}</div>
+      <div style="flex:1;min-width:0"><div class="di-name">${p.name}</div><div class="di-qty">${p.unit}</div></div>
+      <div class="qty-control" style="margin-right:10px"><button class="qty-btn" onclick="chg(${p.id},-1);renderKosik()">−</button><div class="qty-val">${qty}</div><button class="qty-btn" onclick="chg(${p.id},1);renderKosik()">+</button></div>
+      <div class="di-price">${(p.price*qty).toFixed(2).replace('.',',')} Kč</div>
+    </div>`).join('')}
+    <div class="total-row"><span style="font-size:13px;color:var(--text2)">Celkem s DPH</span><span style="font-size:18px;font-weight:600">${total.toFixed(2).replace('.',',')} Kč</span></div>
+  </div>
+  <button class="btn-primary" onclick="alert('Objednávka odeslána! Admin ji brzy potvrdí.')">Odeslat objednávku ↗</button>`;
+}
+
+// ---- ORDERS ----
+function filterOrd(el,f){
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ordFilter=f;
+  renderOrders();
+}
+
+function renderOrders(){
+  let orders=ORDERS_DATA;
+  if(ordFilter==='aktivni') orders=ORDERS_DATA.filter(o=>o.status!=='dorucena'&&o.status!=='zrusena');
+  if(ordFilter==='hotove') orders=ORDERS_DATA.filter(o=>o.status==='dorucena'||o.status==='zrusena');
+  const activeCount=ORDERS_DATA.filter(o=>o.status!=='dorucena'&&o.status!=='zrusena').length;
+  let html='';
+  if(ordFilter!=='hotove'&&activeCount){
+    html+=`<div class="notif-bar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="notif-text">Máte ${activeCount} aktivní objednávk${activeCount===1?'u':'y'} — klepněte pro detail.</div></div>`;
+  }
+  html+=orders.map(o=>{
+    const preview=o.items.slice(0,3).map(i=>`<span class="item-chip">${i.emoji} ${i.name}</span>`).join('');
+    const more=o.items.length>3?`<span class="item-chip">+${o.items.length-3} další</span>`:'';
+    return `<div class="order-card" onclick="showOrdDetail('${o.id}')">
+      <div class="order-head"><span class="order-id">${o.id}</span><span class="order-total">${o.total.toFixed(2).replace('.',',')} Kč</span></div>
+      <div class="order-meta">${o.date} · ${o.items.length} položek</div>
+      <span class="badge ${BADGE_CLASS[o.status]}">${BADGE_LABEL[o.status]}</span>
+      <div class="order-items">${preview}${more}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('ord-list').innerHTML=html;
+}
+
+function showOrdDetail(id){
+  const o=ORDERS_DATA.find(x=>x.id===id);
+  if(!o) return;
+  document.getElementById('ord-detail-title').textContent=o.id;
+  const curIdx=STATUS_ORDER.indexOf(o.status);
+  const tlHTML=STEPS.map((step,i)=>{
+    const done=i<curIdx,active=i===curIdx,wait=i>curIdx;
+    const isLast=i===STEPS.length-1;
+    const dotCls=done?'done':active?'active':'wait';
+    const lineCls=i<curIdx?'done':'wait';
+    const icon=done?`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`:active?`<div class="tl-active-dot"></div>`:'';
+    const ts=o.statusTs[step.key]?`<div class="tl-time">${o.statusTs[step.key]}</div>`:'';
+    return `<div class="tl-step">
+      <div class="tl-left"><div class="tl-dot ${dotCls}">${icon}</div>${!isLast?`<div class="tl-line ${lineCls}"></div>`:''}</div>
+      <div class="tl-right"><div class="tl-label${wait?' wait':''}">${step.label}</div><div class="tl-sub">${step.sub}</div>${ts}</div>
+    </div>`;
+  }).join('');
+  const itemsHTML=o.items.map(i=>`<div class="detail-item"><div class="di-emoji">${i.emoji}</div><div style="flex:1;min-width:0"><div class="di-name">${i.name}</div><div class="di-qty">×${i.qty}</div></div><div class="di-price">${(i.price*i.qty).toFixed(2).replace('.',',')} Kč</div></div>`).join('');
+  const total=o.items.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('ord-detail-content').innerHTML=`
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:13px;color:var(--text3);margin-bottom:4px">${o.date}</div><span class="badge ${BADGE_CLASS[o.status]}">${BADGE_LABEL[o.status]}</span></div>
+      <div style="text-align:right"><div style="font-size:12px;color:var(--text3)">Celkem</div><div style="font-size:18px;font-weight:600;color:var(--green-dark)">${o.total.toFixed(2).replace('.',',')} Kč</div></div>
+    </div></div>
+    <div class="card"><div class="card-title">Stav objednávky</div><div class="timeline">${tlHTML}</div></div>
+    <div class="card"><div class="card-title">Položky</div><div>${itemsHTML}</div>
+    <div class="total-row"><span style="font-size:13px;color:var(--text2)">Celkem s DPH</span><span style="font-size:18px;font-weight:600">${total.toFixed(2).replace('.',',')} Kč</span></div></div>`;
+  show('s-ord-detail');
+}
+</script>
+</body>
+</html>
